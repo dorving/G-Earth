@@ -1,4 +1,5 @@
 import org.gradle.internal.os.OperatingSystem
+import org.gradle.launcher.daemon.protocol.Build
 
 plugins {
     id("org.beryx.runtime") version "1.12.5"
@@ -31,7 +32,10 @@ dependencies {
     implementation("org.fxmisc.richtext:richtextfx:0.10.5")
     implementation("org.json:json:20190722")
     implementation("org.jsoup:jsoup:1.14.2")
-    implementation("org.slf4j:slf4j-jdk14:2.0.0-alpha0")
+    implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation("ch.qos.logback:logback-core:1.2.3")
+    implementation("com.alibaba:dns-cache-manipulator:1.8.0-RC1")
+
 }
 
 java {
@@ -55,6 +59,16 @@ javafx {
 application {
     mainClass.set("gearth.GEarthLauncher")
     applicationName = "G-Earth"
+}
+val copyGMem by tasks.registering(Copy::class) {
+    from(file("$projectDir/src/main/resources/build/mac/G-Mem"))
+    into("$buildDir/classes/java")
+    shouldRunAfter(tasks.getByName("jar"))
+}
+
+tasks.getByName("assemble") {
+
+    dependsOn(copyGMem)
 }
 
 runtime {
