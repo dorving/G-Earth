@@ -38,26 +38,33 @@ public class StoreExtensionTools {
 
     public static void executeExtension(String extensionPath, int port) {
         try {
-            String installedExtensionId = Paths.get(extensionPath).getFileName().toString();
+            final String installedExtensionId = Paths.get(extensionPath).getFileName().toString();
 
-            String commandPath = Paths.get(extensionPath, "command.txt").toString();
-            String cookie = NetworkExtensionAuthenticator.generateCookieForExtension(installedExtensionId);
-            List<String> command = new JSONArray(FileUtils.readFileToString(new File(commandPath), "UTF-8"))
+            final String commandPath = Paths.get(extensionPath, "command.txt").toString();
+            final String cookie = NetworkExtensionAuthenticator.generateCookieForExtension(installedExtensionId);
+            final List<String> command = new JSONArray(FileUtils.readFileToString(new File(commandPath), "UTF-8"))
                     .toList().stream().map(o -> (String)o).map(s -> s
                             .replace("{port}", port+"")
                             .replace("{filename}", installedExtensionId)
                             .replace("{cookie}", cookie))
                     .collect(Collectors.toList());
 
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(new File(Paths.get(extensionPath, "extension").toString()));
-            Process p = pb.start();
-            NormalExtensionRunner.maybeLogExtension(extensionPath, p);
+            if (ExecutionInfo.autoResolveJava8()) {
+                try {
+                    if (command.get(0).equals("java"))
+                        command.set(0, ExecutionInfo.getExecutionCommand("*.jar")[0]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 
+            final ProcessBuilder pb = new ProcessBuilder(command);
+            pb.directory(new File(Paths.get(extensionPath, "extension").toString()));
+            final Process p = pb.start();
+            NormalExtensionRunner.maybeLogExtension(extensionPath, p);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     private static void unzipInto(InputStream inputStream, File directory) throws IOException {
