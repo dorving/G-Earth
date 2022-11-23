@@ -62,16 +62,7 @@ application {
     mainClass.set("gearth.GEarthLauncher")
     applicationName = "G-Earth"
 }
-val copyGMem by tasks.registering(Copy::class) {
-    from(file("$projectDir/src/main/resources/build/mac/G-Mem"))
-    into("$buildDir/classes/java")
-    shouldRunAfter(tasks.getByName("jar"))
-}
 
-tasks.getByName("assemble") {
-
-    dependsOn(copyGMem)
-}
 
 val copyGMem by tasks.registering(Copy::class) {
     from(file("$projectDir/src/main/resources/build/mac/G-Mem"))
